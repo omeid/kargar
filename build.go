@@ -60,6 +60,8 @@ func NewBuild(ctx context.Context) *Build {
 	}
 }
 
+// Context returns the current builds context.
+// Useful for loging.
 func (b *Build) Context() context.Context {
 	return b.ctx
 }
@@ -105,6 +107,7 @@ func (b *Build) Add(tasks ...Task) error {
 	return nil
 }
 
+// ErrorNoSuchTask is returned when any of the given tasks does not exist.
 var ErrorNoSuchTask = fmt.Errorf("No Such Task.")
 
 //RunFor runs a task using an alternative context.

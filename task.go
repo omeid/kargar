@@ -1,7 +1,6 @@
 package kargar
 
 import (
-	"errors"
 	"sync"
 
 	"github.com/omeid/gonzo/context"
@@ -59,6 +58,9 @@ func (t *task) run(ctx context.Context) error {
 	}
 
 	ctx, cancel := context.WithCancel(ctx)
+
+	var once sync.Once;
+
 	ctx.Debug("start")
 	var wg sync.WaitGroup
 	for _, t := range t.deps {
@@ -72,9 +74,13 @@ func (t *task) run(ctx context.Context) error {
 				ctx.Debug("Waiting for %s", t.Name)
 				err := t.run(ctx)
 				if err != nil {
+					once.Do(func() {
+						ctx.Warnf("%s failed. Giving up!", t.Name);
+					});
+
 					cancel()
 					if err != context.Canceled {
-						//ctx.Error(err)
+						ctx.Error(err)
 					}
 				}
 			}(t)
@@ -84,7 +90,10 @@ func (t *task) run(ctx context.Context) error {
 
 	err := ctx.Err()
 	if err != nil {
-		return errors.New("Failed")
+		if err == context.Canceled {
+			return nil
+		}
+		return err
 	}
 
 	t.running = true

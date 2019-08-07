@@ -74,15 +74,15 @@ func (b *Build) Add(tasks ...Task) error {
 	defer b.lock.Unlock()
 	for i, T := range tasks {
 		if T.Name == "" {
-			return fmt.Errorf("Task %d Missing Name.", i)
+			return fmt.Errorf("Task %d Missing Name", i)
 		}
 
 		if T.Action == nil {
-			return fmt.Errorf("Task %s Missing Action.", T.Name)
+			return fmt.Errorf("Task %s Missing Action", T.Name)
 		}
 
 		if T.Usage == "" {
-			return fmt.Errorf("Task %s Missing Usage.", T.Name)
+			return fmt.Errorf("Task %s Missing Usage", T.Name)
 		}
 
 		if _, ok := b.tasks[T.Name]; ok {
@@ -93,11 +93,11 @@ func (b *Build) Add(tasks ...Task) error {
 		for _, dep := range t.Deps {
 			d, ok := b.tasks[dep]
 			if !ok {
-				return fmt.Errorf("Missing Task %s. Required by Task %s.", dep, t.Name)
+				return fmt.Errorf("Missing Task %s. Required by Task %s", dep, t.Name)
 			}
 			_, ok = d.deps[t.Name]
 			if ok {
-				return fmt.Errorf("Circular dependency %s requies %s and around.", d.Name, t.Name)
+				return fmt.Errorf("Circular dependency %s requies %s and around", d.Name, t.Name)
 			}
 			t.deps[dep] = d
 		}
@@ -108,7 +108,7 @@ func (b *Build) Add(tasks ...Task) error {
 }
 
 // ErrorNoSuchTask is returned when any of the given tasks does not exist.
-var ErrorNoSuchTask = fmt.Errorf("No Such Task.")
+var ErrorNoSuchTask = fmt.Errorf("No Such Task")
 
 //RunFor runs a task using an alternative context.
 //This this is typically useful when you want to dynamically
@@ -128,6 +128,7 @@ func (b *Build) RunFor(ctx context.Context, tasks ...string) error {
 		default:
 			t, ok := b.tasks[name]
 			if !ok {
+				b.ctx.Errorf("Missing Task %s", name)
 				return ErrorNoSuchTask
 			}
 			err := t.run(ctx)
